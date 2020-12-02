@@ -54,8 +54,6 @@ public class IslandManager {
         int radius = Core.getInstance().getIslandSystem().getMainConfig().getRadius();
         int distanceBetween = Core.getInstance().getIslandSystem().getMainConfig().getSpaceBetween();
 
-
-
         int posX = (int) Math.round(locX / (radius*2 + distanceBetween));
         int posZ = (int) Math.round(locZ / (radius*2 + distanceBetween));
 
