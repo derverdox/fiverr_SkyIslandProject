@@ -1,7 +1,7 @@
 package de.verdox.skyislands.subsystems.islands.commands;
 
 import de.verdox.skyislands.Core;
-import de.verdox.skyislands.subsystems.guis.IslandsGUI;
+import de.verdox.skyislands.subsystems.islands.guis.IslandsGUI;
 import de.verdox.skyislands.subsystems.islands.model.Island;
 import de.verdox.skyislands.subsystems.islands.model.IslandManager;
 import de.verdox.skyislands.subsystems.islands.model.IslandPosition;
@@ -14,7 +14,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.hamcrest.core.Is;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,7 +119,7 @@ public class IslandCommand implements TabExecutor {
         if(args.length <= 1){
             suggest.add("auto");
             suggest.add("home");
-            suggest.add("delete");
+            //suggest.add("delete");
             suggest.add("addFriend");
             suggest.add("removeFriend");
             suggest.add("worth");

@@ -25,16 +25,18 @@ public class IslandTable extends MySQLTable {
                 "ownerUUID varchar(64) NOT NULL DEFAULT ''," +
                 "coordX int(11) NOT NULL DEFAULT '0'," +
                 "coordZ int(11) NOT NULL DEFAULT '0'," +
+                "worth float(11) NOT NULL DEFAULT '0'," +
                 "PRIMARY KEY (id)\n)");
         connection.close();
     }
 
     public void saveIsland(Island island) throws SQLException {
         Connection connection = mySQL.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO shattered_islands_islandData (ownerUUID,coordX,coordZ) VALUES (?,?,?)");
+        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO shattered_islands_islandData (ownerUUID,coordX,coordZ, worth) VALUES (?,?,?,?)");
         preparedStatement.setString(1, String.valueOf(island.getOwnerUUID()));
         preparedStatement.setInt(2, island.getIslandPosition().getX());
         preparedStatement.setInt(3, island.getIslandPosition().getZ());
+        preparedStatement.setDouble(4, island.getWorth());
         preparedStatement.executeUpdate();
         connection.close();
     }
@@ -57,7 +59,9 @@ public class IslandTable extends MySQLTable {
             UUID ownerUUID = UUID.fromString(resultSet.getString("ownerUUID"));
             int coordX = resultSet.getInt("coordX");
             int coordZ = resultSet.getInt("coordZ");
-            IslandManager.getInstance().loadIsland(ownerUUID,coordX,coordZ);
+            double worth = resultSet.getDouble("worth");
+            Island island = IslandManager.getInstance().loadIsland(ownerUUID,coordX,coordZ);
+            island.setWorth(worth);
         }
         connection.close();
     }
@@ -75,6 +79,22 @@ public class IslandTable extends MySQLTable {
 
     @Override
     public void updatePlayerData(Player player) throws SQLException {}
+
+    @Override
+    public void onCloseConnection() throws SQLException {
+        for (Island island : IslandManager.getInstance().getCache().values()) {
+            updateIsland(island);
+        }
+    }
+    public void updateIsland(Island island) throws SQLException{
+        Connection connection = mySQL.getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE shattered_islands_islandData SET worth=? WHERE coordX=? AND coordZ=?");
+        preparedStatement.setDouble(1, island.getWorth());
+        preparedStatement.setInt(2, island.getIslandPosition().getX());
+        preparedStatement.setInt(3, island.getIslandPosition().getZ());
+        preparedStatement.executeUpdate();
+        connection.close();
+    }
 
     @Override
     public PlayerData playerDataObject(Player player) {

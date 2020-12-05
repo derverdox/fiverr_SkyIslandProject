@@ -47,15 +47,7 @@ public class CustomListener implements Listener {
     }
 
     private void sendPlayerRightMessage(Island island, Player player){
-        if(island.isCachingBlocks()){
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(ChatColor.translateAlternateColorCodes('&',"&8[&aInsel&7-&aWert&8] &cCaching blocks&7...")));
-        }
-        else if(island.isCalculatingWorth()){
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(ChatColor.translateAlternateColorCodes('&',"&8[&aInsel&7-&aWert&8] &cCalculating worth&7...")));
-        }
-        else {
-            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(ChatColor.translateAlternateColorCodes('&',"&8[&aInsel&7-&aWert&8] &6"+island.getWorth())));
-        }
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(ChatColor.translateAlternateColorCodes('&',"&8[&aInsel&7-&aWert&8] &6"+island.getWorth())));
     }
 
 }

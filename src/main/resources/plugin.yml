@@ -1,6 +1,7 @@
 name: ShatteredIslands
 main: de.verdox.skyislands.Core
 version: 1.0
+api-version: 1.13
 commands:
   islands:
     description: "Island Command"

@@ -12,9 +12,7 @@ import de.verdox.vcore.utils.RandomUtil;
 import org.bukkit.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class IslandManager {
     public static IslandManager instance;
@@ -27,6 +25,7 @@ public class IslandManager {
 
     private World voidMap;
     private final Map<IslandPosition, Island> cache = new HashMap<>();
+    private final Set<UUID> generatorCache = new HashSet<>();
 
     IslandManager(){ }
 
@@ -62,6 +61,11 @@ public class IslandManager {
     }
 
     public void generateIsland(UUID ownerUUID, IslandCallback callback){
+
+        if(generatorCache.contains(ownerUUID))
+            return;
+        generatorCache.add(ownerUUID);
+
         Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(),() -> {
 
             Island island = createIsland(ownerUUID);
@@ -77,15 +81,21 @@ public class IslandManager {
                 IslandPlayerData islandPlayerData = (IslandPlayerData) SessionManager.getInstance().getSession(Bukkit.getPlayer(ownerUUID)).getData(IslandPlayerData.identifier);
                 if(islandPlayerData != null)
                     islandPlayerData.addIslandToCache(island);
+
                 Bukkit.getScheduler().runTask(Core.getInstance(), () -> callback.callback(island));
             }
+            generatorCache.remove(ownerUUID);
         });
     }
 
-    public void loadIsland(UUID ownerUUID, int coordX, int coordZ){
+    public boolean isAlreadyGenerating(UUID uuid){
+        return generatorCache.contains(uuid);
+    }
+
+    public Island loadIsland(UUID ownerUUID, int coordX, int coordZ){
         IslandPosition islandPosition = new IslandPosition(voidMap,coordX,coordZ);
         if(isPositionTaken(islandPosition))
-            return;
+            return getIslandAt(islandPosition);
         Island island = new Island(ownerUUID,islandPosition);
         this.cache.put(islandPosition,island);
         if(Bukkit.getPlayer(ownerUUID) != null){
@@ -93,6 +103,7 @@ public class IslandManager {
             if(islandPlayerData != null)
                 islandPlayerData.addIslandToCache(island);
         }
+        return island;
     }
 
     private Island createIsland(UUID ownerUUID){

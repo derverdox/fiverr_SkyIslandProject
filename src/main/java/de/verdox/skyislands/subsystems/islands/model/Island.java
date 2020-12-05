@@ -1,12 +1,16 @@
 package de.verdox.skyislands.subsystems.islands.model;
 
 import de.verdox.skyislands.Core;
+import de.verdox.skyislands.dataconnection.MySQLManager;
+import de.verdox.skyislands.subsystems.islands.dataconnection.IslandTable;
 import de.verdox.vcore.VCore;
+import de.verdox.vcore.dataconnection.MySQL;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +28,7 @@ public class Island {
     private final Map<Material, Integer> blockCache;
 
     Island(UUID ownerUUID, IslandPosition islandPosition){
-        VCore.getInstance().consoleMessage("Loading Island at: "+islandPosition);
+        //VCore.getInstance().consoleMessage("Loading Island at: "+islandPosition);
         this.ownerUUID = ownerUUID;
         this.islandPosition = islandPosition;
         this.blockWorth = Core.getInstance().getIslandSystem().getMainConfig().getBlockWorth();
@@ -32,22 +36,24 @@ public class Island {
         Bukkit.getScheduler().runTaskAsynchronously(Core.getInstance(),() -> {
             cacheBlocks();
             calculateWorth();
-            VCore.getInstance().consoleMessage("Island loaded: "+islandPosition);
+            IslandTable islandTable = (IslandTable) MySQLManager.getInstance().getMySQLConnector().getTable(IslandTable.class);
+            try { islandTable.updateIsland(this); } catch (SQLException exception) { exception.printStackTrace(); }
+            VCore.getInstance().consoleMessage("Worth of island updated: "+islandPosition);
         });
     }
 
     public double calculateWorth(){
-        VCore.getInstance().consoleMessage("Start calculating worth for: "+islandPosition);
+        //VCore.getInstance().consoleMessage("Start calculating worth for: "+islandPosition);
         this.calculatingWorth = true;
         updateBlockWorth();
-        this.worth = 0;
+        worth = 0;
             blockCache.forEach((material, integer) -> {
                 if(!blockWorth.containsKey(material))
                     return;
-                this.worth += (blockWorth.get(material) * integer);
+                worth += (blockWorth.get(material) * integer);
             });
         this.calculatingWorth = false;
-        VCore.getInstance().consoleMessage("Finished calculating worth for: "+islandPosition);
+        //VCore.getInstance().consoleMessage("Finished calculating worth for: "+islandPosition);
         return worth;
     }
 
@@ -97,7 +103,7 @@ public class Island {
     }
 
     private void cacheBlocks(){
-        VCore.getInstance().consoleMessage("Start blockCaching for: "+islandPosition);
+        //VCore.getInstance().consoleMessage("Start blockCaching for: "+islandPosition);
         updateBlockWorth();
             cachingBlocks = true;
             for(int x = islandPosition.getMinX(); x < islandPosition.getMaxX(); x++){
@@ -108,7 +114,7 @@ public class Island {
                     }
                 }
             }
-        VCore.getInstance().consoleMessage("Finished blockCaching for: "+islandPosition);
+        //VCore.getInstance().consoleMessage("Finished blockCaching for: "+islandPosition);
         cachingBlocks = false;
     }
 
@@ -137,5 +143,9 @@ public class Island {
             blockCache.remove(material);
         else
             blockCache.put(material,newValue);
+    }
+
+    public void setWorth(double worth) {
+        this.worth = worth;
     }
 }
